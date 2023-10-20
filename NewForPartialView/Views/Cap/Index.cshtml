@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <form method="post" onsubmit="return onSubmitForm();">
+        <input type="text" />
+        <br /><br />
+        <input type="password" />
+        <br /><br />
+        <div class="g-recaptcha" data-sitekey="6Lf8vJooAAAAAO5qivzMpG-PHgOLNpcMSfDKE1qg" id="divcaptcha"></div>
+        <input id="txtcaptcha" name="response" type="text" style="display: none" data-sitekey="6Lf8vJooAAAAAO5qivzMpG-PHgOLNpcMSfDKE1qg" />
+        <br /><br />
+        <input type="submit" value="Submit" />
+    </form>
+    <div id="failure" style="color: red; display: none;">Authentication failed. Please press on the reCapcha.</div>
+    <script>
+        var onloadCallback = function () {
+            grecaptcha.render('divcaptcha', {
+                'sitekey': '6Lf8vJooAAAAAO5qivzMpG-PHgOLNpcMSfDKE1qg',
+                'callback': function (response) {
+                    $('#txtcaptcha').val('t');
+                }
+            });
+        }
+
+        function onSubmitForm() {
+            var captchaResponse = grecaptcha.getResponse();
+            if (captchaResponse.length === 0) {
+                $('#failure').show();
+                return false;
+            } else {
+                $('#failure').hide();
+                
+                return true;
+            }
+        }
+    </script>
+</body>
+</html>

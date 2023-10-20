@@ -1,0 +1,31 @@
+﻿@model IEnumerable<NewForPartialView.Models.Stud>
+
+@{
+    ViewData["Title"] = "Studs";
+}
+
+<h1>Studs</h1>
+
+
+<div class="container">
+    <div class="row">
+        <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Roll</th>
+
+
+            </tr>
+        </thead>
+        </table>
+        @foreach (var item in Model)
+        {
+            <div>
+                <partial name="_StudPartialView" model="item">
+            </div>
+        }
+    </div>
+
+</div>

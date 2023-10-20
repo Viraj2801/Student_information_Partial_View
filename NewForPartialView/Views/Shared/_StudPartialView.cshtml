@@ -1,0 +1,102 @@
+﻿@model IEnumerable<NewForPartialView.Models.Stud>
+
+<div class="row" style="padding-top: 5px; padding-left: 20px;">
+    <input type="text" id="filterInput" placeholder="Enter the name" style="width: 200px; ">
+    <div id="tableContainer">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Roll</th>
+                    <th scope="col">Address</th>
+                    <th scope="col">City</th>
+                    <th scope="col">Image</th>
+
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var stud in Model)
+                {
+                    <tr>
+                        <td>@stud.Name</td>
+                        <td>@stud.Roll</td>
+                        <td>@stud.Address</td>
+                        <td>@stud.City</td>
+                        <td><img src="@stud.ImageUrl" alt="Student Image" style="max-width: 100px; max-height: 100px;" /></td>
+
+
+                        <td>
+                            <button class="btn btn-info" onclick="editStudent(@stud.Id)">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteStudent(@stud.Id)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="text-center" style="margin-top: -20px;">
+    <label id="loadButton" class="btn btn-primary" style="background-color: transparent; color: black; outline: none; border: none;">See More</label>
+</div>
+
+<script>
+    var visibleRows = 4;
+    var currentPage = 1;
+    var rowsPerPage = 4;
+    var currentScrollPosition = 0;
+
+    $(document).ready(function () {
+        showRows(currentPage);
+
+        $('#loadButton').click(function () {
+            currentPage++;
+            showRows(currentPage, true);
+            scrollToTable(currentPage); 
+        });
+
+        $('#filterInput').on('input', function () {
+            filterRows($(this).val());
+        });
+
+        function showRows(page, appendData) {
+            var start = (page - 1) * visibleRows;
+            var end = start + visibleRows;
+
+            if (!appendData) {
+                $('.table tbody tr').hide();
+            }
+
+            $('.table tbody tr').slice(start, end).show();
+
+            if (end >= $('.table tbody tr').length) {
+                $('#loadButton').hide();
+            }
+        }
+
+        function filterRows(filterText) {
+            $('.table tbody tr').hide();
+            filterText = filterText.toLowerCase();
+
+            $('.table tbody tr').each(function () {
+                var studentName = $(this).find('td:first-child').text().toLowerCase();
+                if (studentName.includes(filterText)) {
+                    $(this).show();
+                }
+            });
+        }
+
+        function scrollToTable(page) {
+            if (page <= 1) {
+                currentScrollPosition = 0;
+            } else {
+                currentScrollPosition += rowsPerPage * 40; 
+            }
+
+            $('html, body').animate({
+                scrollTop: currentScrollPosition
+            }, 1000); 
+        }
+    });
+</script>
