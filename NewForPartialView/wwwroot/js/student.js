@@ -1,7 +1,13 @@
-$(document).ready(function () {
 
+$(document).ready(function () {
     $('#partialViewContainer').load('/Home/Student_Information');
 
+    $('#saveButton').click(function () {
+        saveStudent();
+    });
+    //$('#saveButton').click(function () {
+    //    myDropzone.processQueue(); 
+    //});
     $('#fetchDataButton').click(function () {
         $.ajax({
             url: '/Home/Student_Information',
@@ -14,58 +20,125 @@ $(document).ready(function () {
         });
     });
 });
-function addStudent() {
-    var student = new FormData();
-    student.append("Name", $('#name').val());
-    student.append("Roll", $('#roll').val());
-    student.append("Address", $('#address').val());
-    student.append("City", $('#city').val());
-    student.append("Image", $('#file')[0].files[0]); // Use [0] to access the first selected file
-    student.append("ImageUrl", $('#file')[0]); // Use [0] to access the first selected file
+Dropzone.autoDiscover = false;
+var myDropzone = new Dropzone("#my-dropzone", {
+    url: '/Home/AddStud', 
+    paramName: "images", 
+    maxFilesize: 5, 
+    acceptedFiles: "image/*", 
+    addRemoveLinks: true,
+    autoProcessQueue: false,
+    init: function () {
+        this.on('success', function (file, response) {
+           
 
-    $.ajax({
-        url: '/Home/AddStud',
-        type: 'POST',
-        data: student,
-        processData: false, // Prevent jQuery from automatically processing the data
-        contentType: false, // Prevent jQuery from setting the content type
-        success: function (data) {
-            $('#partialViewContainer').load('/Home/Student_Information');
-            clearForm();
-        },
-        error: function () {
-            alert('Failed to add the student. Please check your data.');
-        }
-    });
-}
+        });
+
+        this.on('error', function (file, response) {
+           
+        });
+    },
+});
+
+
+$('#my-dropzone').on('change', function () {
+    
+
+});
+
+$('#file').on('change', function () {
+    var fileInput = $(this)[0];
+    if (fileInput.files && fileInput.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#selectedImage').attr('src', e.target.result);
+            $('#selectedImage').css('display', 'block');
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+    } else {
+        // Handle case when no file is selected or browser doesn't support File API
+        $('#selectedImage').css('display', 'none');
+    }
+});
+
 
 function editStudent(id) {
-    var student = {
-        Id: id,
-        Name: $('#name').val(),
-        Roll: $('#roll').val(),
-        Address: $('#address').val(),
-        City: $('#city').val()
-    };
-
-    $.ajax({
-        url: '/Home/UpdateStud', // Correct the URL
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(student),
-        success: function (data) {
-            $('#partialViewContainer').load('/Home/Student_Information');
-            clearForm();
-        },
-        error: function () {
-            alert('Failed to update the student. Please check your data.');
-        }
-    });
+    window.location.href = '/Home/AddDataToTable?id=' + id;
 }
+
+
+
+
+
+function saveStudent() {
+
+    
+
+    
+        var data = new FormData();
+        var studentId = $('#saveButton').data('student-id');
+        data.append("Name", $('#name').val());
+        data.append("Roll", $('#roll').val());
+        data.append("Address", $('#address').val());
+        data.append("City", $('#city').val());
+    var uploadedFiles = myDropzone.getAcceptedFiles();
+    for (var i = 0; i < uploadedFiles.length; i++) {
+        data.append("images", uploadedFiles[i]);
+    }
+
+        //console.log(data);
+        //// Append an array of files for images
+        //var fileInput = $('#file')[0];
+        //for (var i = 0; i < fileInput.files.length; i++) {
+        //    data.append("images", fileInput.files[i]);
+        //}
+
+        if (studentId) {
+            data.append("Id", studentId);
+            console.log(data);
+
+            $.ajax({
+                url: '/Home/UpdateStud/' + studentId,
+                type: 'POST',
+                data: data,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    window.location.href = '/Home/Student_Information';
+                },
+                error: function () {
+                    alert('Failed to update the student. Please check your data.');
+                }
+
+
+            });
+        } else {
+            console.log(data);
+
+            $.ajax({
+                url: '/Home/AddStud',
+                type: 'POST',
+                data: data,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    window.location.href = '/Home/Student_Information';
+                },
+                error: function () {
+                    alert('Failed to save the student. Please check your data.');
+                }
+
+
+            });
+        }
+    
+}
+
+
 
 function deleteStudent(id) {
     $.ajax({
-        url: '/Home/DeleteStud/' + id, // Correct the URL and pass the ID
+        url: '/Home/DeleteStud/' + id,
         type: 'POST',
         success: function (data) {
             $('#partialViewContainer').load('/Home/Student_Information');
@@ -79,3 +152,12 @@ function clearForm() {
     $('#address').val('');
     $('#city').val('');
 }
+
+function scrollToSection(sectionId) {
+    $('html, body').animate({
+        scrollTop: $(sectionId).offset().top
+    }, 1000);
+
+}
+
+

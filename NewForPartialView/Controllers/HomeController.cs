@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using NewForPartialView.Models;
 using NewForPartialView.Utility;
+using Newtonsoft.Json;
 using System.Diagnostics;
 
 namespace NewForPartialView.Controllers
@@ -30,8 +33,7 @@ namespace NewForPartialView.Controllers
 
         public IActionResult Student_Information()
         {
-            List<Stud> model = _db.Studs.ToList();
-
+            List<Stud> model = _db.Studs.Include(s => s.ImageUrl).ToList();
 
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
@@ -41,53 +43,160 @@ namespace NewForPartialView.Controllers
 
             return View("Student_Information");
         }
+
+        public IActionResult AddDataToTable()
+        {
+         return View("AddDataToTable");
+
+        }
+
+
+
         [HttpPost]
-        public IActionResult AddStud([FromForm] Stud student, IFormFile image)
+        public IActionResult AddStud([FromForm] Stud student, List<IFormFile> images)
         {
             if (ModelState.IsValid)
             {
-                if (image != null && image.Length > 0)
-                {
-                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images/Student");
-                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
-                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                    using (var fileStream = new FileStream(filePath, FileMode.Create))
-                    {
-                        image.CopyTo(fileStream);
-                    }
-
-                    student.ImageUrl = "/images/Student/" + uniqueFileName;
-                }
-
                 _db.Studs.Add(student);
                 _db.SaveChanges();
-                return Json(student);
+
+            if (images != null && images.Count > 0)
+            {
+                student.ImageUrl = new List<StudentImage>();
+
+                string studentFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images/Student", student.Id.ToString());
+
+                if (!Directory.Exists(studentFolder))
+                {
+                    Directory.CreateDirectory(studentFolder);
+                }
+
+                foreach (var image in images)
+                {
+                    if (image.Length > 0)
+                    {
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
+                        string filePath = Path.Combine(studentFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            image.CopyTo(fileStream);
+                        }
+
+                        student.ImageUrl.Add(new StudentImage
+                        {
+                            Url = $"/images/Student/{student.Id}/{uniqueFileName}"
+                        });
+                    }
+                }
+
+                _db.SaveChanges();
+                }
+
+                return Content("Success");
             }
 
             return BadRequest("Invalid data.");
         }
+
 
         [HttpPost]
-        public IActionResult UpdateStud([FromBody] Stud student)
+        public IActionResult UpdateStud([FromForm] Stud student, List<IFormFile> images)
         {
+          
             if (ModelState.IsValid)
             {
-                var existingStudent = _db.Studs.FirstOrDefault(s => s.Id == student.Id);
-                if (existingStudent != null)
-                {
-                    existingStudent.Name = student.Name;
-                    existingStudent.Roll = student.Roll;
-                    existingStudent.Address = student.Address;
-                    existingStudent.City = student.City;
+             
 
-                    _db.Studs.Update(existingStudent);
-                    _db.SaveChanges();
-                    return Json(existingStudent);
+
+                var existingStudent = _db.Studs
+     .Include(s => s.ImageUrl)
+     .FirstOrDefault(s => s.Id == student.Id);
+
+          
+            if (existingStudent != null)
+            {
+                existingStudent.Name = student.Name;
+                existingStudent.Roll = student.Roll;
+                existingStudent.Address = student.Address;
+                existingStudent.City = student.City;
+
+                if (existingStudent.ImageUrl == null)
+                {
+                    existingStudent.ImageUrl = new List<StudentImage>(); // Initialize if null
                 }
+
+                existingStudent.ImageUrl.Clear();
+
+                string studentFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images/Student", existingStudent.Id.ToString());
+
+
+                if (!Directory.Exists(studentFolder))
+                {
+                    Directory.CreateDirectory(studentFolder);
+                }
+
+                foreach (var image in images)
+                {
+                    if (image.Length > 0)
+                    {
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
+                        string filePath = Path.Combine(studentFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            image.CopyTo(fileStream);
+                        }
+
+                        existingStudent.ImageUrl.Add(new StudentImage
+                        {
+                            Url = $"/images/Student/{existingStudent.Id}/{uniqueFileName}"
+                        });
+                    }
+                }
+
+                _db.SaveChanges();
+
+                return Content("Success");
             }
-            return BadRequest("Invalid data.");
+            else
+            {
+                Console.WriteLine("Student not found with Id: " + student.Id);
+            }
+            }
+            return Content("Success");
         }
+
+
+
+        [HttpGet]
+        public IActionResult GetStudent(int id)
+        {
+            var student = _db.Studs
+                .Include(s => s.ImageUrl) // Include related StudentImage data
+                .FirstOrDefault(s => s.Id == id);
+
+            if (student != null)
+            {
+                var studentData = new
+                {
+                    id = student.Id,
+                    name = student.Name,
+                    roll = student.Roll,
+                    address = student.Address,
+                    city = student.City,
+                    imageUrl = student.ImageUrl.Select(image => image.Url).ToList() // Extract URLs from StudentImage objects
+                };
+
+                return Json(studentData);
+            }
+
+            return Json(null); // Handle case where the student is not found
+        }
+
+
+
+
 
         [HttpPost]
         public IActionResult DeleteStud(int id)

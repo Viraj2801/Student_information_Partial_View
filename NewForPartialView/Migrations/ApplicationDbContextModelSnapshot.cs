@@ -244,10 +244,6 @@ namespace NewForPartialView.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -259,6 +255,28 @@ namespace NewForPartialView.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Studs");
+                });
+
+            modelBuilder.Entity("NewForPartialView.Models.StudentImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("StudentImage");
                 });
 
             modelBuilder.Entity("NewForPartialView.Models.ApplicationUser", b =>
@@ -329,6 +347,22 @@ namespace NewForPartialView.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("NewForPartialView.Models.StudentImage", b =>
+                {
+                    b.HasOne("NewForPartialView.Models.Stud", "Student")
+                        .WithMany("ImageUrl")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("NewForPartialView.Models.Stud", b =>
+                {
+                    b.Navigation("ImageUrl");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,0 +1,69 @@
+﻿@{
+    ViewData["Title"] = "AddDataToTable";
+
+}
+
+<style>
+    .form-group {
+        display: inline-block;
+        width: 170px;
+        padding: 5px;
+    }
+</style>
+<form id="addStudentForm" enctype="multipart/form-data" >
+    <div class="form-row">
+        <div class="form-group">
+            <input type="text" name="Name" id="name" class="form-control" placeholder="Name" required />
+        </div>
+        <div class="form-group">
+            <input type="number" name="Roll" id="roll" class="form-control" placeholder="Roll" required />
+        </div>
+        <div class="form-group">
+            <input type="text" name="Address" id="address" class="form-control" placeholder="Address" required />
+        </div>
+        <div class="form-group">
+            <input type="text" name="City" id="city" class="form-control" placeholder="City" required />
+        </div>
+       
+
+      @*  <div class="form-group">
+            <input type="file" name="images" id="file" class="form-control" accept=".jpg, .jpeg, .png" multiple />
+        </div>
+
+        <div class="form-group">
+            <br />
+
+            <img id="selectedImage" src="#" alt="Selected Image" style="max-width: 50px; max-height: 100px; display: none; margin-top: -40px;"  />
+        
+        </div>*@
+
+       @* <div class="form-group">
+            <br />
+            <div id="imageContainer" src="#" alt="Selected Image"></div> <!-- Place it here, within the same form -->
+        </div>*@
+
+        <div class="form-group">
+            <div id="my-dropzone" class="dropzone" ></div>
+        </div>
+
+        <button type="button" class="btn btn-success" id="saveButton">Save</button>
+
+
+    </div>
+
+
+    <!-- A container to display selected images -->
+    @*<div class="form-group">
+        <div id="selectedImagesContainer"></div>
+    </div>*@
+
+
+</form>
+
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.0/min/dropzone.min.js"></script>
+    <script src="~/js/student.js"></script>
+    <script src="~/js/student_edit.js"></script>
+
+}

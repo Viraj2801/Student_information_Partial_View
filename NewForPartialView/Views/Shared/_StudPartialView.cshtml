@@ -1,7 +1,25 @@
 ﻿@model IEnumerable<NewForPartialView.Models.Stud>
+<style>
+    .add-student-text {
+        position: relative;
+        top: -5px;
+        display: inline-block;
+    }
+
+</style>
 
 <div class="row" style="padding-top: 5px; padding-left: 20px;">
-    <input type="text" id="filterInput" placeholder="Enter the name" style="width: 200px; ">
+    <div style="display: flex; align-items: center;">
+        <label>Search the student:</label>
+        <input type="text" id="filterInput" placeholder="Enter the name" style="width: 200px; margin-left:10px">
+        <form  asp-controller="Home" asp-action="AddDataToTable">
+            <button type="submit" class="btn btn-success" style="width: 150px; height: 30px; margin-left: 500px;">
+                <span class="add-student-text">Add Student</span>
+            </button>
+        </form>
+    </div>
+
+
     <div id="tableContainer">
         <table class="table">
             <thead>
@@ -11,7 +29,6 @@
                     <th scope="col">Address</th>
                     <th scope="col">City</th>
                     <th scope="col">Image</th>
-
                     <th scope="col">Action</th>
                 </tr>
             </thead>
@@ -23,14 +40,24 @@
                         <td>@stud.Roll</td>
                         <td>@stud.Address</td>
                         <td>@stud.City</td>
-                        <td><img src="@stud.ImageUrl" alt="Student Image" style="max-width: 100px; max-height: 100px;" /></td>
+                        <td>
+                            @if (stud.ImageUrl != null)
+                            {
+                                @foreach (var image in stud.ImageUrl)
+                                {
+                                    <img src="@image.Url" alt="Student Image" style="max-width: 100px; max-height: 100px; margin-right: 5px;" />
+                                }
+                            }
 
+                        </td>
 
                         <td>
+
                             <button class="btn btn-info" onclick="editStudent(@stud.Id)">Edit</button>
                             <button class="btn btn-danger" onclick="deleteStudent(@stud.Id)">Delete</button>
                         </td>
                     </tr>
+
                 }
             </tbody>
         </table>
